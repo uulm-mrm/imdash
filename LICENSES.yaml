@@ -1,0 +1,16 @@
+project:
+ - files: "*"
+   copyright: 2023-2024, Jona Ruof
+   license: Apache-2.0
+external:
+ - name: carbon-design-system
+   files:
+     - src/imdash/resources/logo.svg
+     - src/imdash/resources/logo.png
+   copyright:
+     - 2015, IBM
+   license: Apache-2.0
+   url: https://github.com/carbon-design-system/carbon/blob/release/v11.8.0/packages/icons/src/svg/32/dashboard.svg
+   version: c0bfabd62ef23415582323d9d63b61657f3b8874
+   version: v11.8.0
+   modified: true

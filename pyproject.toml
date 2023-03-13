@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "imdash"
+version = "0.0.1"
+authors = [
+  { name="Jona Ruof", email="jona.ruof@uni-ulm.de" },
+]
+description = "Dynamic real-time dashboards with imviz"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    'imviz>=0.2.6',
+    'objtoolbox>=0.0.9',
+]
+[project.scripts]
+imdash = "imdash.main:main"
+
+[project.urls]
+"Homepage" = "https://github.com/joruof/imdash"
+"Bug Tracker" = "https://github.com/joruof/imdash/issues"
