@@ -85,10 +85,19 @@ class SourcesManager:
 
         viz.set_next_window_size(viz.get_main_window_size() * 0.5)
         if viz.begin_popup_modal(f"Select source"):
-            for con in self.connectors:
-                con.render(None, self)
-            if viz.is_mouse_double_clicked(0):
+            r = viz.get_content_region_avail()
+            h = r[1] - viz.get_global_font_size() * 1.8
+            if viz.begin_child("connectors", size=(-1, h)):
+                for con in self.connectors:
+                    con.render(None, self)
+                if viz.is_mouse_double_clicked(0):
+                    viz.close_current_popup()
+                viz.end_child()
+            viz.separator()
+            if viz.button("Cancel"):
                 viz.close_current_popup()
+            viz.same_line()
+            viz.text("Hint: Select with double click")
             viz.end_popup()
 
     def reset_liveness(self):

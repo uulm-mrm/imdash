@@ -20,9 +20,9 @@ class FileSource:
         self.mod_time = 0.0
         self.mod = True
 
-    def render(self):
+    def __autogui__(self, name, ctx, **kwargs):
 
-        viz.autogui(self.data)
+        return ctx.render(self.data, name)
 
 
 class FileSystemConnector(ConnectorBase):
@@ -32,64 +32,21 @@ class FileSystemConnector(ConnectorBase):
         super().__init__("/files")
 
         self.show_hidden = False
+        self.selected_path = os.path.abspath(os.path.expanduser("~"))
 
     def cleanup(self):
         pass
 
     def render(self, views, sources):
 
-        if viz.tree_node("files"):
-            self.render_file_tree(views, sources)
-            viz.tree_pop()
+        if viz.button(f"{viz.Icon.FOLDER_OPEN}  Select file"):
+            viz.open_popup("select_file_source_dialog")
 
-    def render_file_tree(self, views, sources, path="/"):
-
-        viz.push_id(path)
-
-        fn = os.path.basename(path)
-        ext = fn.split(".")[-1].lower()
-
-        if os.path.isdir(path):
-            if path != "/":
-                node_open = viz.tree_node(fn + "/")
-            else:
-                node_open = True
-            if node_open:
-                try:
-                    entries = []
-                    for p in sorted(os.listdir(path)):
-                        if p.startswith(".") and not self.show_hidden:
-                            continue
-                        tp = os.path.join(path, p)
-                        entries.append(tp)
-                    for tp in entries:
-                        self.render_file_tree(views, sources, tp)
-                except PermissionError:
-                    viz.text("permission denied", color=(1.0, 0.0, 0.0))
-                if path != "/":
-                    viz.tree_pop()
-        else:
-            source_path = self.prefix + path
-            tree_open = viz.tree_node(fn)
-
-            close_popup = False
-
-            if viz.begin_popup_context_item():
-                if viz.menu_item("Select"):
-                    sources.select(source_path)
-                    close_popup = True
-                viz.end_popup()
-
-            if close_popup:
-                viz.close_current_popup()
-
-            if tree_open:
-                source = sources[source_path]
-                if source is not None:
-                    source.render()
-                viz.tree_pop()
-
-        viz.pop_id()
+        self.selected_path = viz.file_dialog_popup(
+                "select_file_source_dialog", self.selected_path)
+        if viz.mod():
+            sources.select(self.prefix + self.selected_path)
+            viz.close_current_popup()
 
     def update_sources(self, sources):
 
@@ -103,7 +60,7 @@ class FileSystemConnector(ConnectorBase):
                 try:
                     if os.path.getmtime(s.file_path) > s.mod_time:
                         reload_required = True
-                except (FileNotFoundError, PermissionError):
+                except:
                     pass
 
             if s is None or reload_required:
@@ -136,8 +93,11 @@ class FileSystemConnector(ConnectorBase):
                             s.data = fd.read()
 
                     sources[key] = s
-
-                except (FileNotFoundError, PermissionError):
+                except:
                     pass
             else:
-                s.mod = False
+                try:
+                    s.mod = s.mod_requested
+                    s.mod_requested = False
+                except AttributeError:
+                    s.mod = False

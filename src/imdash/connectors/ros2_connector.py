@@ -256,10 +256,6 @@ class Ros2Connector(Node, ConnectorBase):
                 self.render_topic_tree(views, sources_manager, topic_tree)
                 viz.tree_pop()
 
-            if viz.tree_node("params"):
-                viz.text("Please implement me!")
-                viz.tree_pop()
-
             viz.tree_pop()
 
     def render_topic_tree(self, views, sources_manager, tree_node, label="ros2 topics"):

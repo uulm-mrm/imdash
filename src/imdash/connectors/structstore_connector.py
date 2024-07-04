@@ -27,6 +27,7 @@ def locked_path(obj, path):
         sub = obj
 
         for p in path:
+            res = None
             if type(p) == str:
                 res = getattr(sub, p, None)
             if res is None:

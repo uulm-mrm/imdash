@@ -192,6 +192,14 @@ class DataSource:
         except AttributeError:
             return True
 
+    def set_mod(self):
+
+        s = self.get_used_source()
+        if s is None:
+            return
+
+        s.mod_requested = True
+
     def __call__(self):
 
         if self.use_expr:

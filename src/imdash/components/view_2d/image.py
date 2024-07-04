@@ -13,7 +13,7 @@ class Image2DComp(View2DComponent):
 
         super().__init__()
 
-        self.source = DataSource(default=np.ones((100, 100)))
+        self.source = DataSource(default=None, use_expr=True)
         self.flip_horizontally = False
         self.flip_vertically = False
         self.interpolate = True
@@ -22,6 +22,13 @@ class Image2DComp(View2DComponent):
         self.x_scale = 1.0
         self.y_scale = 1.0
         self.tint = ColorEdit()
+
+    def __autogui__(self, name, ctx, **kwargs):
+
+        viz.push_mod_any()
+        ctx.render(self.__dict__, name)
+        if viz.pop_mod_any():
+            self.source.set_mod()
 
     def render(self, idx, view):
 
@@ -42,8 +49,15 @@ class Image2DComp(View2DComponent):
 
         skip_upload = not self.source.mod()
 
+        flags = viz.PlotImageFlags.NONE
+        if self.no_fit:
+            flags |= viz.PlotItemFlags.NO_FIT
+
+        item_id = self.label + f"###{self.uuid}"
+
+        viz.plot_dummy(item_id)
         viz.plot_image(
-            self.label + f"###{self.uuid}",
+            item_id,
             img,
             self.x_offset,
             self.y_offset,
@@ -54,5 +68,4 @@ class Image2DComp(View2DComponent):
             uv1=uv1,
             skip_upload=skip_upload,
             interpolate=self.interpolate,
-            flags=viz.PlotItemFlags.NO_FIT)
-
+            flags=flags)
