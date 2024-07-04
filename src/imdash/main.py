@@ -481,6 +481,7 @@ class Main:
                     self.start_video_recording()
                 else:
                     self.video_recorder.finish()
+                    self.video_recorder = None
                     self.trigger_file_request(self.finish_video_recording)
             if (ke.key == viz.KEY_Z
                     and ke.action == viz.PRESS
