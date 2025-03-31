@@ -17,6 +17,18 @@ from PIL import Image
 import objtoolbox as otb
 
 
+def speak(text):
+
+    try:
+        fd = os.open(os.path.expanduser("~/.speak"),
+                     os.O_NONBLOCK | os.O_WRONLY)
+        os.write(fd, f"{text}\n".encode("utf8"))
+    except:
+        pass
+    finally:
+        os.close(fd)
+
+
 def begin_context_drag_item(id_str, x, y, button=1, tol=10):
 
     if viz.is_item_clicked(button):
@@ -47,9 +59,9 @@ class DataSource:
 
     SOURCES = None
 
-    def __init__(self, default=None, use_expr=True, allow_expr=True):
+    def __init__(self, default=None, use_expr=True, allow_expr=True, path=""):
 
-        self.path = ""
+        self.path = path
         self.new_path = None
 
         self.use_expr = use_expr

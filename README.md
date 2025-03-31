@@ -7,10 +7,10 @@ Data from files, ros2 topics, or [structstores](https://github.com/mertemba/stru
 
 ### Aduulm Repository Metadata
 
-- last updated: 07/2024
+- last updated: 02/2025
 - name: imdash
 - category: tooling
-- maintainers: Jona Ruof
+- maintainers: Marco Deuscher
 - license: Apache-2.0
 - HW dependencies: none
 

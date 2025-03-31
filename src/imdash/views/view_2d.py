@@ -5,6 +5,7 @@ import traceback
 
 import numpy as np
 import imviz as viz
+import imviz.export as vizex
 
 from imdash.utils import (
     ViewBase,
@@ -57,6 +58,8 @@ class PlotSettings:
         self.auto_fit_padding_y = 1.0
         self.show_axis_x = True
         self.show_axis_y = True
+
+        self.export = vizex.PlotExportSettings()
 
     def tooltip(self, text):
 
@@ -173,6 +176,11 @@ class View2D(ViewBase):
                     viz.plot_dummy(label_id, legend_color=(1.0, 0.0, 0.0))
                 exc = traceback.format_exc()
             if viz.begin_legend_popup(label_id):
+                if viz.begin_menu("Edit"):
+                    viz.autogui(c, name="", sources=sources)
+                    viz.end_menu()
+                comp_menu_funcs(c, i)
+
                 if exc is not None:
                     if viz.begin_menu("Error"):
                         exc = "\n".join(["\n".join(textwrap.wrap(
@@ -183,10 +191,7 @@ class View2D(ViewBase):
                             for l in exc.split("\n")])
                         viz.text(exc)
                         viz.end_menu()
-                if viz.begin_menu("Edit"):
-                    viz.autogui(c, name="", sources=sources)
-                    viz.end_menu()
-                comp_menu_funcs(c, i)
+
                 viz.end_legend_popup()
 
         if viz.begin_plot_popup():
@@ -383,6 +388,7 @@ class View2D(ViewBase):
         self.show = viz.get_window_open()
 
         if window_open:
+            vizex.PlotBuffer.current().export = self.plot_settings.export
 
             self.setup_axes()
             self.render_components(sources)

@@ -263,6 +263,8 @@ class Main:
         viz.set_main_window_pos(self.window_pos)
         viz.set_main_window_size(self.window_size)
 
+        self.undo_stack = [copy.deepcopy(self.views)]
+
         return True
 
     def save_config(self, path=None):
@@ -643,10 +645,13 @@ class Main:
 
 
 def main():
-    if len(sys.argv) == 2 and sys.argv[1] == "--dev":
-        viz.dev.launch(Main, "update")
-    else:
-        Main().loop()
+    try:
+        if len(sys.argv) == 2 and sys.argv[1] == "--dev":
+            viz.dev.launch(Main, "update")
+        else:
+            Main().loop()
+    except KeyboardInterrupt:
+        pass
 
 
 if __name__ == "__main__":

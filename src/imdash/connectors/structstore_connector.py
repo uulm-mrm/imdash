@@ -83,6 +83,9 @@ class StructStoreConnector(ConnectorBase):
 
         super().__init__("/structstores")
 
+        self.shm_dir = f"/tmp/shm-{os.getuid()}/"
+        os.makedirs(self.shm_dir, exist_ok=True)
+
         self.stores = {}
 
     def cleanup(self):
@@ -105,7 +108,7 @@ class StructStoreConnector(ConnectorBase):
                 agc = viz.AutoguiContext()
                 agc.post_header_hooks.append(select_hook.hook)
 
-                for shm_path in os.listdir("/dev/shm"):
+                for shm_path in os.listdir(self.shm_dir):
 
                     source_path = self.prefix + "/" + shm_path
                     select_hook.base_path = source_path
@@ -153,7 +156,8 @@ class StructStoreConnector(ConnectorBase):
                     try:
                         s.store = self.stores[s.shm_path]
                     except KeyError:
-                        s.store = sts.StructStoreShared(s.shm_path)
+                        shm_file_path = os.path.join(self.shm_dir, s.shm_path)
+                        s.store = sts.StructStoreShared(shm_file_path, use_file=True)
                         self.stores[s.shm_path] = s.store
 
                     sources[key] = s

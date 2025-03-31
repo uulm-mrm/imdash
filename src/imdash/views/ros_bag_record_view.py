@@ -9,7 +9,7 @@ import multiprocessing as mp
 
 import imviz as viz
 
-from imdash.utils import ViewBase, DataSource
+from imdash.utils import ViewBase, DataSource, speak
 from imdash.connectors import Ros2Connector
 from imdash.connectors import ros2_connector
 
@@ -59,7 +59,7 @@ if ros2_connector.ros2_available:
         record_launch_desc = LaunchDescription([
             ExecuteProcess(
                 cmd=['ros2', 'bag', 'record',
-                     '--storage', 'sqlite3',
+                     '--storage', 'mcap',
                      '-o', str(record_path),
                      *record_topics],
                 output='screen'
@@ -90,6 +90,9 @@ class RosBagRecordView(ViewBase):
         self.record_topics = set()
         self.record_and_remap_topics = set()
 
+        self.trigger_state = DataSource(default=False)
+        self.last_trigger_state = False
+
         self.launch_service = None
         self.launch_proc = None
 
@@ -110,6 +113,8 @@ class RosBagRecordView(ViewBase):
         self.record_path = viz.input("path", self.record_path)
         self.record_name_format = viz.input(
                 "name format", self.record_name_format)
+
+        viz.autogui(self.trigger_state, "Trigger state source", **kwargs)
 
     def __savestate__(self):
 
@@ -147,26 +152,46 @@ class RosBagRecordView(ViewBase):
 
         return all_topics
 
+    def start_recording(self):
+
+        speak("Recording started")
+
+        os.makedirs(self.record_path, exist_ok=True)
+        desc = generate_launch_description(
+                self.record_path,
+                self.record_name_format,
+                self.remap_namespace,
+                list(self.record_topics),
+                list(self.record_and_remap_topics))
+        self.launch_service = LaunchService()
+        self.launch_service.include_launch_description(desc)
+        self.launch_proc = mp.Process(target=self.launch_service.run)
+        self.launch_proc.start()
+
+    def stop_recording(self):
+
+        speak("Recording stopped")
+
+        os.kill(self.launch_proc.pid, signal.SIGINT)
+        self.launch_service = None
+        self.launch_proc = None
+
     def render_toolbar(self, topics):
 
+        try:
+            ts = self.trigger_state()
+        except Exception as e:
+            ts = False
+        triggered = ts and not self.last_trigger_state
+        self.last_trigger_state = ts
+
         if self.launch_service is None:
-            if viz.button("Start recording"):
-                os.makedirs(self.record_path, exist_ok=True)
-                desc = generate_launch_description(
-                        self.record_path,
-                        self.record_name_format,
-                        self.remap_namespace,
-                        list(self.record_topics),
-                        list(self.record_and_remap_topics))
-                self.launch_service = LaunchService()
-                self.launch_service.include_launch_description(desc)
-                self.launch_proc = mp.Process(target=self.launch_service.run)
-                self.launch_proc.start()
+            if viz.button("Start recording") or triggered:
+                self.start_recording()
         else:
-            if viz.button("Stop recording"):
-                os.kill(self.launch_proc.pid, signal.SIGINT)
-                self.launch_service = None
-                self.launch_proc = None
+            if viz.button("Stop recording") or triggered:
+                self.stop_recording()
+
         viz.same_line()
         viz.text(f"{len(self.record_topics)} topics "
                  + f"and {len(self.record_and_remap_topics)} remapped topics")

@@ -31,7 +31,7 @@ class DragPoint2DComp(View2DComponent):
             flags |= viz.PlotDragToolFlags.NO_FIT
 
         x, y = viz.drag_point(
-                "###{idx}dragpoint",
+                f"###{idx}dragpoint",
                 (x, y),
                 self.color(),
                 self.radius,
